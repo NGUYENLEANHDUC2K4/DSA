@@ -183,6 +183,15 @@ XArrayList<T>::XArrayList(
     int capacity)
 {
     // TODO
+    this->count = 0;
+    this->itemEqual = itemEqual;
+    this->deleteUserData = deleteUserData;
+    this->capacity = capacity;
+    this->data = new T[capacity];
+    if (this->data == nullptr)
+    {
+        throw std::bad_alloc();
+    }
 }
 
 template <class T>
@@ -194,6 +203,16 @@ void XArrayList<T>::copyFrom(const XArrayList<T> &list)
      * Also duplicates user-defined comparison and deletion functions, if applicable.
      */
     // TODO
+    this->count = list.count;
+    this->capacity = list.capacity;
+    this->itemEqual = list.itemEqual;
+    this->deleteUserData = list.deleteUserData;
+    this->data = new T[this->capacity];
+    if (this->data == nullptr)
+    {
+        throw std::bad_alloc();
+    }
+    memcpy(this->data, list.data, sizeof(T) * this->count);
 }
 
 template <class T>
@@ -211,18 +230,57 @@ template <class T>
 XArrayList<T>::XArrayList(const XArrayList<T> &list)
 {
     // TODO
+    if (list.data == nullptr)
+    {
+        return;
+    }
+    copyFrom(list);
 }
 
 template <class T>
 XArrayList<T> &XArrayList<T>::operator=(const XArrayList<T> &list)
 {
     // TODO
+    if (this == &list)
+    {
+        return *this;
+    }
+    if (this->data != nullptr)
+    {
+        removeInternalData();
+    }
+    copyFrom(list);
+    return *this;
 }
 
 template <class T>
 XArrayList<T>::~XArrayList()
 {
     // TODO
+    if (this->data != nullptr)
+    {
+        removeInternalData();
+    }
+    else if (this->count > 0)
+    {
+        this->count = 0;
+    }
+    else if (this->capacity > 0)
+    {
+        this->capacity = 10;
+    }
+    else if (this->itemEqual != nullptr)
+    {
+        this->itemEqual = 0;
+    }
+    else if (this->deleteUserData != nullptr)
+    {
+        this->deleteUserData = 0;
+    }
+    else
+    {
+        return *this;
+    }
 }
 
 template <class T>
@@ -322,6 +380,24 @@ void XArrayList<T>::ensureCapacity(int index)
      * In case of memory allocation failure, catches std::bad_alloc.
      */
     // TODO
+    if (index > this->capacity)
+    {
+        throw std::out_of_range("Index out of range");
+    }
+    if (index < this->capacity)
+    {
+        return;
+    }
+    int newCapacity = this->capacity * 2;
+    T *newData = new T[newCapacity];
+    if (newData == nullptr)
+    {
+        throw std::bad_alloc();
+    }
+    memcpy(newData, data, sizeof(T) * count);
+    delete[] data;
+    this->data = newData;
+    this->capacity = newCapacity;
 }
 
 #endif /* XARRAYLIST_H */
