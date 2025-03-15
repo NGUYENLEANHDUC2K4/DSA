@@ -518,6 +518,8 @@ void DLinkedList<T>::copyFrom(const DLinkedList<T> &list)
     this->clear();
     this->deleteUserData = list.deleteUserData;
     this->itemEqual = list.itemEqual;
+    for (typename DLinkedList<T>::Iterator it = list.begin(); it != list.end(); it++)
+        this->add(*it);
 }
 
 template <class T>
