@@ -110,66 +110,83 @@ template <typename T>
 List1D<T>::List1D()
 {
     // TODO
+    pList = new XArrayList<T>();
 }
 
 template <typename T>
 List1D<T>::List1D(int num_elements)
 {
     // TODO
+    pList = new XArrayList<T>(num_elements);
 }
 
 template <typename T>
 List1D<T>::List1D(const T *array, int num_elements)
 {
     // TODO
+    pList = new XArrayList<T>(num_elements);
+    for (int i = 0; i < num_elements; i++)
+        pList->add(array[i]);
 }
 
 template <typename T>
 List1D<T>::List1D(const List1D<T> &other)
 {
     // TODO
+    pList = new XArrayList<T>(other.pList);
 }
 
 template <typename T>
 List1D<T>::~List1D()
 {
     // TODO
+    pList->clear();
+    delete pList;
 }
 
 template <typename T>
 int List1D<T>::size() const
 {
     // TODO
+    return pList->size();
 }
 
 template <typename T>
 T List1D<T>::get(int index) const
 {
     // TODO
+    return pList->get(index);
 }
 
 template <typename T>
 void List1D<T>::set(int index, T value)
 {
     // TODO
+    typename IList<T>::Iterator it = pList->begin();
+    for (int i = 0; i < index; i++)
+        it++;
+    *it = value;
 }
 
 template <typename T>
 void List1D<T>::add(const T &value)
 {
     // TODO
+    pList->add(value);
 }
 
 template <typename T>
 string List1D<T>::toString() const
 {
     // TODO
+    return pList->toString();
 }
 
 template <typename T>
 ostream &operator<<(ostream &os, const List1D<T> &list)
 {
     // TODO
+    os << list.toString();
     return os;
 }
 
