@@ -461,12 +461,34 @@ List1D<string> InventoryManager::query(string attributeName, const double &minVa
 void InventoryManager::removeDuplicates()
 {
     // TODO
+    int i = 0;
+    while (i < productNames.size())
+    {
+        int j = i + 1;
+        while (j < productNames.size())
+            if ((productNames.get(i) == productNames.get(j)) && (attributesMatrix.getRow(i).toString() == attributesMatrix.getRow(j).toString()))
+            {
+                quantities.set(i, quantities.get(i) + quantities.get(j));
+                productNames.remove(j);
+                quantities.remove(j);
+                attributesMatrix.remove(j);
+            }
+            else
+                j++;
+        i++;
+    }
 }
 
 InventoryManager InventoryManager::merge(const InventoryManager &inv1,
                                          const InventoryManager &inv2)
 {
     // TODO
+    InventoryManager result;
+    for (int i = 0; i < inv1.size(); i++)
+        result.addProduct(inv1.getProductAttributes(i), inv1.getProductName(i), inv1.getProductQuantity(i));
+    for (int i = 0; i < inv2.size(); i++)
+        result.addProduct(inv2.getProductAttributes(i), inv2.getProductName(i), inv2.getProductQuantity(i));
+    return result;
 }
 
 void InventoryManager::split(InventoryManager &section1,
@@ -474,6 +496,11 @@ void InventoryManager::split(InventoryManager &section1,
                              double ratio) const
 {
     // TODO
+    int s1 = size() * ratio;
+    for (int i = 0; i < s1; i++)
+        section1.addProduct(getProductAttributes(i), getProductName(i), getProductQuantity(i));
+    for (int i = s1; i < size(); i++)
+        section2.addProduct(getProductAttributes(i), getProductName(i), getProductQuantity(i));
 }
 
 List2D<InventoryAttribute> InventoryManager::getAttributesMatrix() const
