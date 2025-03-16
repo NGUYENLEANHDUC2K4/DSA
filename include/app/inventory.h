@@ -32,6 +32,11 @@ public:
     string toString() const;
 
     friend ostream &operator<<(ostream &os, const List1D<T> &list);
+
+    // students add more methods here
+    void remove(int index);
+    int indexOf(const T &value) const;
+    void addAt(int index, const T &value);
 };
 
 // -------------------- List2D --------------------
@@ -54,6 +59,11 @@ public:
     string toString() const;
 
     friend ostream &operator<<(ostream &os, const List2D<T> &matrix);
+
+    // students add more methods here
+    void remove(int rowIndex);
+    void indexOf(const T &value) const;
+    void addRow(const List1D<T> &row);
 };
 
 struct InventoryAttribute
@@ -87,7 +97,7 @@ public:
     void addProduct(const List1D<InventoryAttribute> &attributes, const string &name, int quantity);
     void removeProduct(int index);
 
-    List1D<string> query(int attributeName, const double &minValue,
+    List1D<string> query(string attributeName, const double &minValue,
                          const double &maxValue, int minQuantity, bool ascending) const;
 
     void removeDuplicates();
@@ -190,6 +200,25 @@ ostream &operator<<(ostream &os, const List1D<T> &list)
     return os;
 }
 
+// add more methods here
+template <typename T>
+void List1D<T>::remove(int index)
+{
+    pList->removeAt(index);
+}
+
+template <typename T>
+int List1D<T>::indexOf(const T &value) const
+{
+    return pList->indexOf(value);
+}
+
+template <typename T>
+void List1D<T>::addAt(int index, const T &value)
+{
+    pList->add(index, value);
+}
+
 // -------------------- List2D Method Definitions --------------------
 template <typename T>
 List2D<T>::List2D()
@@ -240,16 +269,11 @@ void List2D<T>::setRow(int rowIndex, const List1D<T> &row)
     // TODO
     if (rowIndex < 0 || rowIndex >= pMatrix->size())
         throw out_of_range("Index of row in the matrix");
-    if (rowIndex == pMatrix->size())
-        pMatrix->add(*row);
-    else
-    {
-        typename DLinkedList<IList<T> *>::Iterator it = pMatrix->begin();
-        for (int i = 0; i < rowIndex; i++)
-            it++;
-        delete *it;
-        *it = new XArrayList<T>(*row);
-    }
+    typename DLinkedList<IList<T> *>::Iterator it = pMatrix->begin();
+    for (int i = 0; i < rowIndex; i++)
+        it++;
+    delete *it;
+    *it = new XArrayList<T>(*row);
 }
 
 template <typename T>
@@ -290,6 +314,25 @@ ostream &operator<<(ostream &os, const List2D<T> &matrix)
     // TODO
     os << matrix.toString();
     return os;
+}
+
+// add more methods here
+template <typename T>
+void List2D<T>::remove(int rowIndex)
+{
+    pMatrix->removeAt(rowIndex);
+}
+
+template <typename T>
+void List2D<T>::indexOf(const T &value) const
+{
+    return pMatrix->indexOf(value);
+}
+
+template <typename T>
+void List2D<T>::addRow(const List1D<T> &row)
+{
+    pMatrix->add(row);
 }
 
 // -------------------- InventoryManager Method Definitions --------------------
@@ -360,12 +403,59 @@ void InventoryManager::addProduct(const List1D<InventoryAttribute> &attributes, 
 void InventoryManager::removeProduct(int index)
 {
     // TODO
+    productNames.remove(index);
+    quantities.remove(index);
+    attributesMatrix.remove(index);
 }
 
-List1D<string> InventoryManager::query(int attributeName, const double &minValue,
+List1D<string> InventoryManager::query(string attributeName, const double &minValue,
                                        const double &maxValue, int minQuantity, bool ascending) const
 {
     // TODO
+    List1D<int> listPosition;
+    for (int i = 0; i < productNames.size(); i++)
+    {
+        if (quantities.get(i) >= minQuantity)
+        {
+            List1D<InventoryAttribute> attributeList = attributesMatrix.getRow(i);
+            for (int j = 0; j < attributeList.size(); j++)
+                if (attributeList.get(j).name == attributeName && attributeList.get(j).value >= minValue && attributeList.get(j).value <= maxValue)
+                {
+                    listPosition.add(i);
+                    break;
+                }
+        }
+    }
+    List1D<string> resultName;
+    List1D<int> resultQuantity;
+    for (int i = 0; i < listPosition.size(); i++)
+        if (resultQuantity.size() == 0)
+        {
+            resultName.add(productNames.get(i));
+            resultQuantity.add(quantities.get(i));
+        }
+        else
+        {
+            for (int j = 0; j < resultQuantity.size(); j++)
+                if (ascending)
+                {
+                    if (quantities.get(listPosition.get(i)) < resultQuantity.get(j))
+                    {
+                        resultName.addAt(j, productNames.get(listPosition.get(i)));
+                        resultQuantity.addAt(j, quantities.get(listPosition.get(i)));
+                        break;
+                    }
+                }
+                else
+                {
+                    if (quantities.get(listPosition.get(i)) > resultQuantity.get(j))
+                    {
+                        resultName.addAt(j, productNames.get(listPosition.get(i)));
+                        resultQuantity.addAt(j, quantities.get(listPosition.get(i)));
+                    }
+                }
+        }
+    return resultName;
 }
 
 void InventoryManager::removeDuplicates()
@@ -389,21 +479,29 @@ void InventoryManager::split(InventoryManager &section1,
 List2D<InventoryAttribute> InventoryManager::getAttributesMatrix() const
 {
     // TODO
+    return attributesMatrix;
 }
 
 List1D<string> InventoryManager::getProductNames() const
 {
     // TODO
+    return productNames;
 }
 
 List1D<int> InventoryManager::getQuantities() const
 {
     // TODO
+    return quantities;
 }
 
 string InventoryManager::toString() const
 {
     // TODO
+    string result = "InventoryManager[\n";
+    result += "  AttributesMatrix: " + attributesMatrix.toString() + ",\n";
+    result += "  ProductNames: " + productNames.toString() + ",\n";
+    result += "  Quantities: " + quantities.toString() + "\n]";
+    return result;
 }
 
 #endif /* INVENTORY_MANAGER_H */
